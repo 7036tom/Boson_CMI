@@ -26,7 +26,7 @@ numpy.random.seed(seed)
 
 # Function to create model, required for KerasClassifier
 
-def create_model(nr1, nr2, nr3, nr4, nr5, nr6, nr7, nr8):
+def create_model(nr, nr2, dr1, dr2, dr3, lr, wll1, w1l2):
     # create model
     #L=WinnerTakeAll1D_GaborMellis(spatial=1, OneOnX=WTAX)
    
@@ -34,59 +34,59 @@ def create_model(nr1, nr2, nr3, nr4, nr5, nr6, nr7, nr8):
 
     input_grid = Input(shape=(16,))
 
-    x2 = Dense(nr1, init='normal', activation='relu')(input_grid)
-    #x2 = Dropout(dr1)(x1)
+    x1 = Dense(nr, init='normal', activation='relu', W_regularizer=l1l2(l1=w1l1, l2=w1l2))(input_grid)
+    x2 = Dropout(dr1)(x1)
     
 
-    x3 = Dense(nr2, activation ='relu')(x2)
-    x3 = Dense(nr2, activation ='relu')(x3)
+    x3 = Dense(nr, activation ='relu')(x2)
+    x3 = Dense(nr, activation ='relu')(x3)
     x4 = merge([x3, x2], mode='sum')
-    #x4= Dropout(dr2)(x4)
+    x4= Dropout(dr2)(x4)
 
-    x5 = Dense(nr3, activation ='relu')(x4)
-    x5 = Dense(nr3, activation ='relu')(x5)
+    x5 = Dense(nr, activation ='relu')(x4)
+    x5 = Dense(nr, activation ='relu')(x5)
     x6 = merge([x5, x4], mode='sum')
-    #x6 = Dropout(dr2)(x6)
+    x6 = Dropout(dr2)(x6)
 
-    x7 = Dense(nr4, activation ='relu')(x6)
-    x7 = Dense(nr4, activation ='relu')(x6)
+    x7 = Dense(nr, activation ='relu')(x6)
+    x7 = Dense(nr, activation ='relu')(x6)
     x8 = merge([x7, x6], mode='sum')
-    #x8 = Dropout(dr2)(x7)
+    x8 = Dropout(dr2)(x8)
 
-    x9 = Dense(nr5, activation ='relu')(x8)
-    x9 = Dense(nr5, activation ='relu')(x9)
+    x9 = Dense(nr, activation ='relu')(x8)
+    x9 = Dense(nr, activation ='relu')(x9)
     x10 = merge([x9, x8], mode='sum')
-    #x10 = Dropout(dr3)(x9)
+    x10 = Dropout(dr2)(x10)
 
-    x11 = Dense(nr6, activation ='relu')(x10)
-    x11 = Dense(nr6, activation ='relu')(x11)
+    x11 = Dense(nr, activation ='relu')(x10)
+    x11 = Dense(nr, activation ='relu')(x11)
     x12 = merge([x11, x10], mode='sum')
-    #x12 = Dropout(dr3)(x11)
+    x12 = Dropout(dr2)(x12)
 
-    x13 = Dense(nr7, activation ='relu')(x12)
-    x13 = Dense(nr7, activation ='relu')(x13)
+    x13 = Dense(nr, activation ='relu')(x12)
+    x13 = Dense(nr, activation ='relu')(x13)
     x13 = merge([x13, x12], mode='sum')
-    #x12 = Dropout(dr3)(x11)
+    x12 = Dropout(dr2)(x13)
 
-    x14 = Dense(nr8, activation ='relu')(x13)
-    x14 = Dense(nr8, activation ='relu')(x14)
+    x14 = Dense(nr, activation ='relu')(x13)
+    x14 = Dense(nr, activation ='relu')(x14)
     x14 = merge([x14, x13], mode='sum')
-    #x12 = Dropout(dr3)(x11)
+    x14 = Dropout(dr2)(x14)
     
-    x15 = Dense(nr9, activation ='relu')(x14)
-    #x14 = Dropout(dr3)(x13)
+    x15 = Dense(nr2, activation ='relu')(x14)
+    x15 = Dropout(dr3)(x15)
    
     output = Dense(2, activation='softmax')(x15)
 
     model = Model(input_grid, output)
     
-    admax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0)
+    admax = Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0)
     model.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy']) # Gradient descent
     return model
 
 
 # load dataset
-dataframe = pandas.read_csv("DatabaseZiyu.csv", header=None)
+dataframe = pandas.read_csv("Database.csv", header=None)
 dataset = dataframe.values
 
 np.random.shuffle(dataset)
@@ -111,30 +111,20 @@ model = KerasClassifier(build_fn=create_model, nb_epoch=5, batch_size=400, verbo
 
 kappa_scorer = make_scorer(cohen_kappa_score)
 # define the grid search parameters*
-nr1 = [50,100,150]
-nr2 = [50,100,150]
-nr4 = [50,100,150]
-nr5 = [50,100,150]
-nr6 = [50,100,150]
-nr7 = [50,100,150]
-nr8 = [50,100,150]
-
+nr = [50, 75, 100, 130]
+nr2 = [50, 100, 200]
 
 dr1 = [0.2,0.4]
 dr2 = [0.2,0.4]
 dr3 = [0.2,0.4]
-dr4 = [0.2,0.4]
-dr5 = [0.2,0.4]
+
 
 lr = [0.001, 0.0001, 0.0005]
 
 
-w1l1 = [0, 0.00001]
-w1l2 = [0, 0.00001]
-w2l1 = [0, 0.00001]
-w2l2 = [0, 0.0001, 0.0005 ,0.00001, 0.00005, 0.000001, 0.000005, 0.0000001, 0.0000005]
-w3l1 = [0, 0.00001]
-w3l2 = [0, 0.00001]
+w1l1 = [0, 0.0001, 0.00001, 0.000001]
+w1l2 = [0, 0.0001, 0.00001, 0.000001]
+
 
 batch_size = [80,83,86,89,92,95,98, 100]
 epochs = [100, 120, 140, 160, 180, 200]
@@ -144,7 +134,7 @@ l2_value = [0, 0.0001, 0.0005 ,0.00001, 0.00005, 0.000001, 0.000005, 0.0000001, 
 l_rate = [0.001, 0.002, 0.003 ,0.004]
 decay = [0.01, 0.001, 0.0001, 0.00001, 0.000001, 0]
 
-param_grid = dict(nr1=nr1, nr2=nr2, nr3=nr3, nr4=nr4, nr5=nr5, nr6=nr6, nr7=nr7, nr8=nr8)
+param_grid = dict(nr=nr, nr2=nr2, dr1=dr1, dr2=dr2, dr3=dr3, lr=lr, w1l1=w1l1, w1l2=w1l2)
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1, cv =2)#, verbose=1)
 
 grid_result = grid.fit(X, Y)
