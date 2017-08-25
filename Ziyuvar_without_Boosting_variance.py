@@ -1,4 +1,5 @@
 # Create first network with Keras
+import sys
 from keras.models import Sequential
 from keras.layers import Dense, Reshape, Activation, Dropout,Layer, LocallyConnected1D, LocallyConnected2D, Convolution1D, GlobalMaxPooling1D, Flatten, MaxPooling1D, MaxPooling2D, Merge
 from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, LearningRateScheduler
@@ -20,8 +21,9 @@ import numpy as np
 import pandas
 from keras.regularizers import l1, activity_l1, l1l2
 
+
 # fix random seed for reproducibility
-seed = 6
+seed = int(sys.argv[1])
 np.random.seed(seed)
 
 from keras.utils import np_utils
@@ -34,7 +36,6 @@ dataset = dataframe.values
 
 dataframe_weights = pandas.read_csv("Weights.csv", header=None)
 dataset_weights = dataframe_weights.values
-
 
 weights = dataset_weights[0:942548]
 
@@ -125,6 +126,25 @@ Y_train = Y_train.reshape(c,)
 c, r = Y_test.shape
 Y_test = Y_test.reshape(c,)
 
+# Percentage definition
+# The point is that we want to reduce the training base by a factor without touching the testing database size. Being said that the testing database is computed automatically with validation_split, it leads to the following definition.
+"""
+100 80 20 
+80	60 20 
+60	40 20
+40	20 20
+
+
+"""
+Percentage = float(sys.argv[2])
+Adapted_percentage = Percentage*0.8+0.2
+"""
+1 0.8/(4*Percentage) 
+0.75 1/3
+0.50 1/2
+0.25 1/1
+"""
+
 # Model_Train #########################################################################
 
 # create model(135/75/105)
@@ -157,7 +177,7 @@ sample_weights_train = sample_weights_train.reshape(c,)
 sample_weights_train=np.absolute(sample_weights_train)
 			
 # Fit the model		
-model_train.fit(X_train, Y3,validation_split=0.2, nb_epoch=1, batch_size=400, sample_weight=sample_weights_train, shuffle=True, verbose=1, callbacks=callbacks)
+model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_train)*Adapted_percentage)],validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, sample_weight=sample_weights_train[0:int(len(X_train)*Adapted_percentage)], shuffle=True, verbose=1, callbacks=callbacks)
 
 
 # Model_Test ###########################################################################
@@ -196,7 +216,7 @@ sample_weights_test = sample_weights_test.reshape(c,)
 sample_weights_test=np.absolute(sample_weights_test)
 		
 # Fit the model		
-model_test.fit(X_test, Y3, validation_split=0.2, nb_epoch=1, batch_size=400, sample_weight=sample_weights_test, shuffle=True, verbose=1, callbacks=callbacks)
+model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y3[0:int(len(X_test)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, sample_weight=sample_weights_test[0:int(len(X_test)*Adapted_percentage)], shuffle=True, verbose=1, callbacks=callbacks)
 
 
 # Predict labels
