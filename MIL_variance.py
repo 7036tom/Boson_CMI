@@ -203,7 +203,7 @@ Adapted_percentage = Percentage*0.8+0.2
 
  # Model_train #################################################################################################################################################
 
-X_train_train = [X_train_best[0:int(len(X_train)*Adapted_percentage)], X_train_best1[0:int(len(X_train)*Adapted_percentage)], X_train_best2[0:int(len(X_train)*Adapted_percentage)]]
+X_train_train = [X_train_best[0:int(len(X_train_best)*Adapted_percentage)], X_train_best1[0:int(len(X_train_best)*Adapted_percentage)], X_train_best2[0:int(len(X_train_best)*Adapted_percentage)]]
 
 digit_input = Input(shape=(147,))
 
@@ -251,14 +251,14 @@ Classification_model_train.compile(optimizer=admax, loss='binary_crossentropy', 
 Y_train_true = np_utils.to_categorical(Y_train, 2) # convert class vectors to binary class matrices
                    
 # Fit the model     
-Classification_model_train.fit(X_train_train, Y_train_true[0:int(len(X_train)*Adapted_percentage)], validation_split=0.2/Adapted_percentage , nb_epoch=1, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
+Classification_model_train.fit(X_train_train, Y_train_true[0:int(len(X_train_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage , nb_epoch=1, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 # Model Test #######################################################################################################################################
 
 
 
-X_test_train = [X_test_best[0:int(len(X_test)*Adapted_percentage)], X_test_best1[0:int(len(X_test)*Adapted_percentage)], X_test_best2[0:int(len(X_test)*Adapted_percentage)]]
+X_test_train = [X_test_best[0:int(len(X_test_best)*Adapted_percentage)], X_test_best1[0:int(len(X_test_best)*Adapted_percentage)], X_test_best2[0:int(len(X_test_best)*Adapted_percentage)]]
 
         
 # Model_test #################################################################################################################################################
@@ -316,7 +316,7 @@ print (Classification_model_test[j].summary()) # Affiche les details du reseau !
 Y_test_true = np_utils.to_categorical(Y_test, 2)            
         
 # Fit the model     
-Classification_model_test.fit(X_test_train, Y_test_true[0:int(len(X_test)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
+Classification_model_test.fit(X_test_train, Y_test_true[0:int(len(X_test_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 
