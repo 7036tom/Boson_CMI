@@ -61,7 +61,13 @@ class BaseWrapper(object):
 		self.build_fn = build_fn
 		self.sample_weight=sample_weight
 		self.sk_params = sk_params
-		
+		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.97, patience=1, min_lr=0.00001)
+		callbacks_pred = [
+			#EarlyStopping(monitor='val_loss', patience=10, verbose=0),
+			ModelCheckpoint("weigh.hdf", monitor='val_loss', save_best_only=True, verbose=0),
+			reduce_lr
+		]
+		self.callbacks=callbacks_pred
 		self.classes_ = np.array([0, 1])
 		print(self.classes_)
 		self.n_classes_ = None
@@ -306,7 +312,7 @@ K.set_image_dim_ordering('th')
 
 
 # load dataset
-dataframe = pandas.read_csv("DatabaseZiyu.csv", header=None)
+dataframe = pandas.read_csv("Database.csv", header=None)
 dataset = dataframe.values
 
 dataframe_weights = pandas.read_csv("Weights.csv", header=None)
@@ -488,38 +494,7 @@ def create_model_train():
 	model = Sequential()
 	
 
-	model.add(Dense(280, input_dim=16, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5), trainable=False)) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
-	model.add(Dropout(0.25))
-	model.add(Dense(370,  activation ='relu',activity_regularizer=l1l2(l1=0, l2=5e-5)))
-	model.add(Dense(120,  activation ='relu',W_regularizer=l1l2(l1=0, l2=5e-06)))
-	model.add(Dropout(0.55))
-	
-	model.add(Dense(1))
-		
-	model.add(Activation('sigmoid'))
-
-	admax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)#decay ? 0.002
-	reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.97, patience=1, min_lr=0.00001)
-	
-	#model.load_weights('weights_boosting_ziyu_train.h5')
-	
-	callbacks = [
-		EarlyStopping(monitor='val_loss', patience=25, verbose=0),
-		ModelCheckpoint("/home/admin-7036/Documents/Projet python/bosongit/weigh.hdf", monitor='val_loss', save_best_only=True, verbose=0),
-		reduce_lr
-	
-	]
-
-	model.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy']) # Gradient descent
-	return model
-	
-
-def create_model_test():
-
-	model = Sequential()
-	
-	
-	model.add(Dense(280, input_dim=16, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5), trainable=False)) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
+	model.add(Dense(280, input_dim=16, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
 	model.add(Dropout(0.25))
 	model.add(Dense(370,  activation ='relu',activity_regularizer=l1l2(l1=0, l2=5e-5)))
 	model.add(Dropout(0.5))
@@ -531,35 +506,47 @@ def create_model_test():
 	model.add(Activation('sigmoid'))
 
 	admax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)#decay ? 0.002
-	reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.97, patience=1, min_lr=0.00001)
-
-	#model.load_weights('weights_boosting_ziyu_test.h5')
-
-	callbacks = [
-		EarlyStopping(monitor='val_loss', patience=25, verbose=0),
-		ModelCheckpoint("/home/admin-7036/Documents/Projet python/bosongit/weigh.hdf", monitor='val_loss', save_best_only=True, verbose=0),
-		reduce_lr
-	
-	]
 
 	model.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy']) # Gradient descent
 	return model
 	
 
+def create_model_test():
+
+	model = Sequential()
+	
+	
+	model.add(Dense(280, input_dim=16, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
+	model.add(Dropout(0.25))
+	model.add(Dense(370,  activation ='relu',activity_regularizer=l1l2(l1=0, l2=5e-5)))
+	model.add(Dropout(0.5))
+	model.add(Dense(120,  activation ='relu',W_regularizer=l1l2(l1=0, l2=5e-06)))
+	model.add(Dropout(0.55))
+	
+	model.add(Dense(1))
+		
+	model.add(Activation('sigmoid'))
+
+	admax = Adamax(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)#decay ? 0.002
+	
+	model.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy']) # Gradient descent
+	return model
+
+
 
 # Train Boosting classifiers
 
-model_train_sklearn = KerasClassifier(build_fn=create_model_train, batch_size=400, nb_epoch=1, validation_split=0.2/Adapted_percentage, class_weight=class_weight)
+model_train_sklearn = KerasClassifier(build_fn=create_model_train, batch_size=400, nb_epoch=100, validation_split=0.2/Adapted_percentage, sample_weight=weights_train)
 
-adaboost_model_train = AdaBoostClassifier(base_estimator=model_train_sklearn, n_estimators=1, learning_rate=100, algorithm='SAMME.R', random_state=seed)
+adaboost_model_train = AdaBoostClassifier(base_estimator=model_train_sklearn, n_estimators=5, learning_rate=1, algorithm='SAMME.R', random_state=seed)
 
 adaboost_model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y_train[0:int(len(X_train)*Adapted_percentage)])
 
 
 
-model_test_sklearn = KerasClassifier(build_fn=create_model_test,batch_size=400, nb_epoch=1, class_weight=class_weight, validation_split=0.2/Adapted_percentage)
+model_test_sklearn = KerasClassifier(build_fn=create_model_train,batch_size=400, nb_epoch=100, validation_split=0.2/Adapted_percentage, sample_weight=weights_test)
 
-adaboost_model_test= AdaBoostClassifier(base_estimator=model_test_sklearn, n_estimators=1, learning_rate=100, algorithm='SAMME.R', random_state=seed)
+adaboost_model_test= AdaBoostClassifier(base_estimator=model_test_sklearn, n_estimators=5, learning_rate=1, algorithm='SAMME.R', random_state=seed)
 
 adaboost_model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y_test[0:int(len(X_test)*Adapted_percentage)])
 
