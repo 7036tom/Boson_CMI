@@ -186,27 +186,27 @@ Adapted_percentage = Percentage*0.8+0.2
 
 input_train = Input(shape=(147,))
 
-x1 = Dense(130, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_train)
+x1 = Dense(30, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_train)
 x2 = Dropout(0.2)(x1)
 		
 
 x2 = Activation('relu')(x2)
-x3 = Dense(130, activation ='relu')(x2)
+x3 = Dense(30, activation ='relu')(x2)
 #x3 = BatchNormalization()(x3)
 x3 = Dropout(0.5)(x3)
 x3 = Activation('relu')(x3)
-x3 = Dense(130)(x3)
+x3 = Dense(30)(x3)
 #x3 = BatchNormalization()(x3)
 x4 = merge([x3, x2], mode='sum')
 #x4 = Activation('relu')(x4)
 x4= Dropout(0.2)(x4)
 
 x4 = Activation('relu')(x4)		
-x5 = Dense(130, activation ='relu')(x4)
+x5 = Dense(30, activation ='relu')(x4)
 #x5 = BatchNormalization()(x5)
 x5 = Dropout(0.5)(x5)
 x5 = Activation('relu')(x5)
-x5 = Dense(130)(x5)
+x5 = Dense(30)(x5)
 #x5 = BatchNormalization()(x5)
 x6 = merge([x5, x4], mode='sum')
 #x6 = Activation('relu')(x6)
@@ -214,29 +214,29 @@ x6 = Dropout(0.2)(x6)
 
 	
 x6 = Activation('relu')(x6)
-x7 = Dense(130, activation ='relu')(x6)
+x7 = Dense(30, activation ='relu')(x6)
 #x7 = BatchNormalization()(x7)
 x7 = Dropout(0.5)(x7)
 x7 = Activation('relu')(x7)
-x7 = Dense(130)(x6)
+x7 = Dense(30)(x6)
 #x7 = BatchNormalization()(x7)
 x8 = merge([x7, x6], mode='sum')
 #x8 = Activation('relu')(x8)
 x8 = Dropout(0.2)(x8)
 
 x8 = Activation('relu')(x8)
-x9 = Dense(130, activation ='relu')(x8)
+x9 = Dense(30, activation ='relu')(x8)
 #x9 = BatchNormalization()(x9)
 x9 = Dropout(0.5)(x9)
 x9 = Activation('relu')(x9)
-x9 = Dense(130, activation ='relu')(x9)
+x9 = Dense(30, activation ='relu')(x9)
 #x9 = BatchNormalization()(x9)
 x10 = merge([x9, x8], mode='sum')
 #x10 = Activation('relu')(x10)
 x10 = Dropout(0.2)(x10)
 
 		
-x31 = Dense(130, activation ='relu')(x10)
+x31 = Dense(30, activation ='relu')(x10)
 x31 = Dropout(0.4)(x31)
 out_train = Dense(2, activation="softmax")(x31)
 model_train = Model(input_train, out_train)
@@ -263,9 +263,11 @@ c, r = sample_weights_train.shape
 sample_weights_train = sample_weights_train.reshape(c,)
 sample_weights_train=np.absolute(sample_weights_train)
 		
-		
+
+print(len(X_train))		
+
 # Fit the model		
-model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_train)*Adapted_percentage)],validation_split=0.2/Adapted_percentage, nb_epoch=100, batch_size=400, sample_weight=sample_weights_train[0:int(len(X_train)*Adapted_percentage)], shuffle=True, verbose=0, callbacks=callbacks)#, class_weight=class_weight)
+model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_train)*Adapted_percentage)],validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, sample_weight=sample_weights_train[0:int(len(X_train)*Adapted_percentage)], shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 	
 # Model test ####################################################################################		
@@ -274,15 +276,15 @@ model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_
 # create model(135/75/105)
 input_test = Input(shape=(147,))
 
-x1b = Dense(130, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_test)
+x1b = Dense(30, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_test)
 x2b = Dropout(0.2)(x1b)
 	
 x2b = Activation('relu')(x2b)	
-x3b = Dense(130, activation ='relu')(x2b)
+x3b = Dense(30, activation ='relu')(x2b)
 #x3b = BatchNormalization()(x3b)
 x3b = Dropout(0.5)(x3b)
 x3b = Activation('relu')(x3b)
-x3b = Dense(130)(x3b)
+x3b = Dense(30)(x3b)
 #x3b = BatchNormalization()(x3b)
 x4b = merge([x3b, x2b], mode='sum')
 #x4b = Activation('relu')(x4b)
@@ -290,11 +292,11 @@ x4b= Dropout(0.2)(x4b)
 
 
 x4b = Activation('relu')(x4b)		
-x5b = Dense(130, activation ='relu')(x4b)
+x5b = Dense(30, activation ='relu')(x4b)
 #x5b = BatchNormalization()(x5b)
 x5b = Dropout(0.5)(x5b)
 x5b = Activation('relu')(x5b)
-x5b = Dense(130)(x5b)
+x5b = Dense(30)(x5b)
 #x5b = BatchNormalization()(x5b)
 x6b = merge([x5b, x4b], mode='sum')
 #x6b = Activation('relu')(x6b)
@@ -302,11 +304,11 @@ x6b = Dropout(0.2)(x6b)
 
 
 x6b = Activation('relu')(x6b)
-x7b = Dense(130, activation ='relu')(x6b)
+x7b = Dense(30, activation ='relu')(x6b)
 #x6b = BatchNormalization()(x6b)
 x7b = Dropout(0.5)(x7b)
 x7b = Activation('relu')(x7b)
-x7b = Dense(130)(x7b)
+x7b = Dense(30)(x7b)
 #x7b = BatchNormalization()(x7b)
 x8b = merge([x7b, x6b], mode='sum')
 #x8b = Activation('relu')(x8b)
@@ -314,11 +316,11 @@ x8b = Dropout(0.2)(x8b)
 		
 
 x8b = Activation('relu')(x8b)
-x9b = Dense(130, activation ='relu')(x8b)
+x9b = Dense(30, activation ='relu')(x8b)
 #x8b = BatchNormalization()(x8b)
-x9b = Dropout(0.)(x9b)
+x9b = Dropout(0.5)(x9b)
 x9b = Activation('relu')(x9b)
-x9b = Dense(130)(x9b)
+x9b = Dense(30)(x9b)
 #x9b = BatchNormalization()(x9b)
 x10b = merge([x9b, x8b], mode='sum')
 #x10b = Activation('relu')(x10b)
@@ -328,7 +330,7 @@ x10b = Dropout(0.2)(x10b)
 
 		
 		
-x21b = Dense(130, activation ='relu')(x10b)
+x21b = Dense(30, activation ='relu')(x10b)
 x21b = Dropout(0.4)(x21b)
 		
 out_test = Dense(2, activation="softmax")(x21b)
@@ -361,7 +363,7 @@ sample_weights_test=np.absolute(sample_weights_test)
 		
 		
 # Fit the model		
-model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y3[0:int(len(X_test)*Adapted_percentage)],validation_split=0.2, nb_epoch=100, batch_size=400, sample_weight=sample_weights_test[0:int(len(X_test)*Adapted_percentage)], shuffle=True, verbose=0, callbacks=callbacks)#, class_weight=class_weight)
+model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y3[0:int(len(X_test)*Adapted_percentage)],validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, sample_weight=sample_weights_test[0:int(len(X_test)*Adapted_percentage)], shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 
