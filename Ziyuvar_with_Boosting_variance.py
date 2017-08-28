@@ -14,7 +14,7 @@ import numpy as np
 from keras.utils.np_utils import to_categorical
 from keras.models import Sequential
 from sklearn.ensemble import AdaBoostClassifier
-
+inspect.getfile(AdaBoostClassifier)
 
 class BaseWrapper(object):
 	"""Base class for the Keras scikit-learn wrapper.
@@ -57,10 +57,11 @@ class BaseWrapper(object):
 	`batch_size` or `nb_epoch` as well as the model parameters.
 	"""
 
-	def __init__(self, build_fn=None, sample_weight= None, **sk_params):
+	def __init__(self, build_fn=None,**sk_params):# sample_weight= None, 
 		self.build_fn = build_fn
-		self.sample_weight=sample_weight
+		#self.sample_weight=sample_weight
 		self.sk_params = sk_params
+		
 		reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.97, patience=1, min_lr=0.00001)
 		callbacks_pred = [
 			#EarlyStopping(monitor='val_loss', patience=10, verbose=0),
@@ -69,7 +70,6 @@ class BaseWrapper(object):
 		]
 		self.callbacks=callbacks_pred
 		self.classes_ = np.array([0, 1])
-		print(self.classes_)
 		self.n_classes_ = None
 
 		self.check_params(sk_params)
@@ -126,7 +126,7 @@ class BaseWrapper(object):
 		self.sk_params.update(params)
 		return self
 
-	def fit(self, x, y, sample_weight, **kwargs):
+	def fit(self, x, y, sample_weight=None, **kwargs):
 		"""Constructs a new model with `build_fn` & fit the model to `(x, y)`.
 
 		# Arguments
@@ -161,8 +161,10 @@ class BaseWrapper(object):
 
 		fit_args = copy.deepcopy(self.filter_sk_params(Sequential.fit))
 		fit_args.update(kwargs)
+		fit_args.update({'sample_weight': sample_weight})
 
 		print(fit_args)
+		print(x[0:3])
 		history = self.model.fit(x, y,  **fit_args)
 
 		return history
@@ -191,6 +193,12 @@ class BaseWrapper(object):
 class KerasClassifier(BaseWrapper):
 	"""Implementation of the scikit-learn classifier API for Keras.
 	"""
+
+	def fit(self, x, y, sample_weight=None, **kwargs):
+		super(KerasClassifier, self).fit(
+            x, y,
+            sample_weight=sample_weight)
+		return self
 
 	def predict(self, x, **kwargs):
 		"""Returns the class predictions for the given test data.
@@ -278,8 +286,6 @@ class KerasClassifier(BaseWrapper):
 						 'the `model.compile()` method.')
 
 
-
-
 # Create first network with Keras
 from keras.models import Sequential
 from keras.layers import Dense, Reshape, Activation, Dropout,Layer, LocallyConnected1D, LocallyConnected2D, Convolution1D, GlobalMaxPooling1D, Flatten, MaxPooling1D, MaxPooling2D, Merge
@@ -328,6 +334,7 @@ Events_number = dataset[0:942548,16:17].astype(float)
 Y = dataset[0:942548,17:18].astype(float)
 
 
+
 # We shuffle the databases.
 # Train
 randomize = np.arange(len(X))
@@ -349,6 +356,7 @@ X /= np.std(X, axis = 0) # normalize
 p = 0
 q = 0
 
+print(X[0:3])
 # Count nbr of pairs
 nbr_pairs = 0
 for i in range(942548):
@@ -534,9 +542,13 @@ def create_model_test():
 
 
 
+
+
+	
+
 # Train Boosting classifiers
 
-model_train_sklearn = KerasClassifier(build_fn=create_model_train, batch_size=400, nb_epoch=100, validation_split=0.2/Adapted_percentage, sample_weight=weights_train)
+model_train_sklearn = KerasClassifier(build_fn=create_model_train, batch_size=400, nb_epoch=1, validation_split=0.2/Adapted_percentage)
 
 adaboost_model_train = AdaBoostClassifier(base_estimator=model_train_sklearn, n_estimators=5, learning_rate=1, algorithm='SAMME.R', random_state=seed)
 
@@ -544,7 +556,7 @@ adaboost_model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y_trai
 
 
 
-model_test_sklearn = KerasClassifier(build_fn=create_model_train,batch_size=400, nb_epoch=100, validation_split=0.2/Adapted_percentage, sample_weight=weights_test)
+model_test_sklearn = KerasClassifier(build_fn=create_model_train,batch_size=400, nb_epoch=1, validation_split=0.2/Adapted_percentage)
 
 adaboost_model_test= AdaBoostClassifier(base_estimator=model_test_sklearn, n_estimators=5, learning_rate=1, algorithm='SAMME.R', random_state=seed)
 
