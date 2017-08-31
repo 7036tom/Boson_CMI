@@ -104,7 +104,7 @@ Y_train = np.copy(dataset_best[0:nbr_pairs, 0:1])
 Y_test = np.copy(dataset_best[0:464182-nbr_pairs, 0:1])
 
 weights_train = np.copy(weights[0:nbr_pairs])
-weights_test = np.copy(weights[0:942548 - nbr_pairs])
+weights_test = np.copy(weights[0:464182 - nbr_pairs])
 
 p = 0
 q = 0
@@ -157,9 +157,6 @@ print(weight0)
 print(weight1)
 class_weight = {0 : 1/weight0,
     1: 1/weight1}
-
-Classification_model_train = [Sequential(), Sequential(), Sequential(), Sequential(), Sequential()]
-Classification_model_test = [Sequential(), Sequential(), Sequential(), Sequential(), Sequential()]
 
 
 c, r = Y_train.shape
@@ -237,7 +234,7 @@ x10 = Dropout(0.2)(x10)
 
 x31 = Dense(30, activation ='relu')(x10)
 x31 = Dropout(0.4)(x31)
-out_train = Dense(2, activation="softmax")(x31)
+out_train = Dense(1, activation="sigmoid")(x31)
 
 
 model_MIL = Model(input_train, out_train)
@@ -274,7 +271,7 @@ Classification_model_train.compile(optimizer=admax, loss='binary_crossentropy', 
 
 Y_train_true = np_utils.to_categorical(Y_train, 2) # convert class vectors to binary class matrices
 # Fit the model     
-Classification_model_train.fit(X_train_train, Y_train_true[0:int(len(X_train_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage , nb_epoch=5, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
+Classification_model_train.fit(X_train_train, Y_train_true[0:int(len(X_train_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage , nb_epoch=100, batch_size=400, class_weight=class_weight, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 # Model Test #######################################################################################################################################
@@ -284,63 +281,60 @@ Classification_model_train.fit(X_train_train, Y_train_true[0:int(len(X_train_bes
 X_test_train = [X_test_best[0:int(len(X_test_best)*Adapted_percentage)], X_test_best1[0:int(len(X_test_best)*Adapted_percentage)], X_test_best2[0:int(len(X_test_best)*Adapted_percentage)]]
 
         
-# Model_test #################################################################################################################################################
-
-
 input_test = Input(shape=(147,))
 
-x1 = Dense(30, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_test)
-x2 = Dropout(0.2)(x1)
+x11 = Dense(30, init='normal', activation='relu', W_regularizer=l1l2(l1=0, l2=1e-05))(input_test)
+x21 = Dropout(0.2)(x11)
         
 
-x2 = Activation('relu')(x2)
-x2 = Dense(30, activation ='relu')(x2)
+x21 = Activation('relu')(x21)
+x21 = Dense(30, activation ='relu')(x21)
 #x3 = BatchNormalization()(x3)
-x3 = Dropout(0.5)(x2)
-x3 = Activation('relu')(x3)
-x3 = Dense(30)(x3)
+x31 = Dropout(0.5)(x21)
+x31 = Activation('relu')(x31)
+x31 = Dense(30)(x31)
 #x3 = BatchNormalization()(x3)
-x4 = merge([x3, x2], mode='sum')
+x41 = merge([x31, x21], mode='sum')
 #x4 = Activation('relu')(x4)
-x4= Dropout(0.2)(x4)
+x41= Dropout(0.2)(x41)
 
-x4 = Activation('relu')(x4)     
-x5 = Dense(30, activation ='relu')(x4)
+x41 = Activation('relu')(x41)     
+x51 = Dense(30, activation ='relu')(x41)
 #x5 = BatchNormalization()(x5)
-x5 = Dropout(0.5)(x5)
-x5 = Activation('relu')(x5)
-x5 = Dense(30)(x5)
+x51 = Dropout(0.5)(x51)
+x51 = Activation('relu')(x51)
+x51 = Dense(30)(x51)
 #x5 = BatchNormalization()(x5)
-x6 = merge([x5, x4], mode='sum')
+x61 = merge([x51, x41], mode='sum')
 #x6 = Activation('relu')(x6)
-x6 = Dropout(0.2)(x6)
+x61 = Dropout(0.2)(x61)
 
     
-x6 = Activation('relu')(x6)
-x7 = Dense(30, activation ='relu')(x6)
+x61 = Activation('relu')(x61)
+x71 = Dense(30, activation ='relu')(x61)
 #x7 = BatchNormalization()(x7)
-x7 = Dropout(0.5)(x7)
-x7 = Activation('relu')(x7)
-x7 = Dense(30)(x7)
+x71 = Dropout(0.5)(x71)
+x71 = Activation('relu')(x71)
+x71 = Dense(30)(x71)
 #x7 = BatchNormalization()(x7)
-x8 = merge([x7, x6], mode='sum')
+x81 = merge([x71, x61], mode='sum')
 #x8 = Activation('relu')(x8)
-x8 = Dropout(0.2)(x8)
+x81 = Dropout(0.2)(x81)
 
-x8 = Activation('relu')(x8)
-x9 = Dense(30, activation ='relu')(x8)
+x81 = Activation('relu')(x81)
+x91 = Dense(30, activation ='relu')(x81)
 #x9 = BatchNormalization()(x9)
-x9 = Dropout(0.5)(x9)
-x9 = Activation('relu')(x9)
-x9 = Dense(30, activation ='relu')(x9)
+x91 = Dropout(0.5)(x91)
+x91 = Activation('relu')(x91)
+x91 = Dense(30, activation ='relu')(x91)
 #x9 = BatchNormalization()(x9)
-x10 = merge([x9, x8], mode='sum')
+x101 = merge([x91, x81], mode='sum')
 #x10 = Activation('relu')(x10)
-x10 = Dropout(0.2)(x10)
+x101 = Dropout(0.2)(x101)
 
-x31 = Dense(30, activation ='relu')(x10)
-x31 = Dropout(0.4)(x31)
-out_test = Dense(2, activation="softmax")(x31)
+x311 = Dense(30, activation ='relu')(x101)
+x311 = Dropout(0.4)(x311)
+out_test = Dense(1, activation="sigmoid")(x311)
 
 model_MIL_test = Model(input_test, out_test)
 
@@ -383,7 +377,7 @@ Classification_model_test.compile(optimizer=admax, loss='binary_crossentropy', m
 Y_test_true = np_utils.to_categorical(Y_test, 2)            
         
 # Fit the model     
-Classification_model_test.fit(X_test_train, Y_test_true[0:int(len(X_test_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=5, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
+Classification_model_test.fit(X_test_train, Y_test_true[0:int(len(X_test_best)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=100, class_weight=class_weight, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 
@@ -398,8 +392,7 @@ Faux_background = 0.0
 Score_signal = 0.0
 Faux_signaux = 0.0
 
-print(Y_test[0])
-print(Z_test.shape)
+print(Z_test[0:10])
 
 for i in range(len(Z_train)):
     
