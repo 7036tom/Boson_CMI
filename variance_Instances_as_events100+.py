@@ -1,6 +1,6 @@
 
 
-
+from keras.callbacks import Callback
 from keras.models import Sequential, Model
 from keras.layers import Dense, Reshape, Activation, Dropout,Layer, LocallyConnected1D, LocallyConnected2D, Convolution1D, GlobalMaxPooling1D, Flatten, MaxPooling1D, MaxPooling2D, Merge, Input, merge
 from keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, LearningRateScheduler
@@ -155,18 +155,20 @@ Percentage = float(sys.argv[2])
 Adapted_percentage = Percentage*0.8+0.2
 
 
+
+
 		
 # Model train ####################################################################################################################################		
 
 # create model(135/75/105)
-model_train.add(Dense(280, input_dim=147, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
-model_train.add(Dropout(0.25))
-#model[j].add(L)
-model_train.add(Dense(370,  activation ='relu', activity_regularizer=l1l2(l1=0, l2=5e-5)))
+model_train.add(Dense(100, input_dim=147, init='normal', activation='relu' ,name='input_train',W_regularizer=l1l2(l1=1E-6, l2=1E-5), activity_regularizer=l1l2(l1=0, l2=1e-7))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))	
+model_train.add(Dropout(0.1))
+model_train.add(Dense(540,  activation ='relu', W_regularizer=l1l2(l1=1e-07, l2=0), activity_regularizer=l1l2(l1=0, l2=5e-7)))
+model_train.add(Dropout(0.3))
+model_train.add(Dense(310,  activation ='relu',name='output_train'))
 model_train.add(Dropout(0.5))
-#model[j].add(L)
-model_train.add(Dense(120,  activation ='relu', W_regularizer=l1l2(l1=0, l2=5e-06)))
-model_train.add(Dropout(0.55))
+model_train.add(Dense(450,  activation ='relu' ))
+model_train.add(Dropout(0.4))
 		
 model_train.add(Dense(2))
 		
@@ -178,15 +180,33 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.95, patience=1, min_l
 def schedule(nb_epoch):
 	return(0.97**nb_epoch)
 """
-		
+
+"""
+X_train_val = X_train[int(0.8*len(X_train)):len(X_train)]
+Y_train_val = Y_train[int(0.8*len(X_train)):len(X_train)]
+weight_train_val =weights_train[int(0.8*len(X_train)):len(X_train)]
+
+
+def AUC_train(y_true, y_pred):
+    yhat = self.model.predict_proba(X_train_val, verbose=0).T[1]
+    return roc_auc_score(Y_train_val, yhat, sample_weight=weight_train_val)
+
+class MonitorAUC_train(Callback):
+    def on_epoch_end(self, epoch, logs={}):
+        yhat = self.model.predict_proba(X_train_val, verbose=0).T[1]
+        print 'AUC', roc_auc_score(Y_train_val, yhat, sample_weight=weight_train_val)
+"""
+
 callbacks = [
    	EarlyStopping(monitor='val_loss', patience=30, verbose=0),
+   	#MonitorAUC_train(),
    	ModelCheckpoint("weigh.hdf", monitor='val_loss', save_best_only=True, verbose=0),
    	reduce_lr
+   	
    	#LearningRateScheduler(schedule),
 ]
 
-model_train.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy']) # Gradient descent
+model_train.compile(optimizer=admax, loss='binary_crossentropy', metrics=['accuracy', AUC_train]) # Gradient descent
 #model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy']) # Gradient descent
 #model[j].compile(optimizer='adam', loss='categorical_crossentropy', metrics=[''sparse_categorical_accuracy'']) # Gradient descent
 
@@ -202,10 +222,10 @@ if (j==0):
 sample_weights_train=np.absolute(sample_weights_train)
 """
 		
-	
+print(len(X_train))
 		
 # Fit the model		
-model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_train)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, class_weight=class_weight, shuffle=True, verbose=0, callbacks=callbacks)#, class_weight=class_weight)
+model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_train)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 		
 
@@ -213,14 +233,14 @@ model_train.fit(X_train[0:int(len(X_train)*Adapted_percentage)], Y3[0:int(len(X_
 
 
 # create model(135/75/105)
-model_test.add(Dense(280, input_dim=147, init='normal', activation='relu' ,W_regularizer=l1l2(l1=5e-06, l2=5e-06), activity_regularizer=l1l2(l1=0, l2=1e-5))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))
-model_test.add(Dropout(0.25))
-#model[j].add(L)
-model_test.add(Dense(370,  activation ='relu', activity_regularizer=l1l2(l1=0, l2=5e-5)))
+model_test.add(Dense(100, input_dim=147, init='normal', activation='relu' ,name='input_train',W_regularizer=l1l2(l1=1E-6, l2=1E-5), activity_regularizer=l1l2(l1=0, l2=1e-7))) #W_regularizer=l1(0.000001), activity_regularizer=activity_l1(0.000001)))	
+model_test.add(Dropout(0.1))
+model_test.add(Dense(540,  activation ='relu', W_regularizer=l1l2(l1=1e-07, l2=0), activity_regularizer=l1l2(l1=0, l2=5e-7)))
+model_test.add(Dropout(0.3))
+model_test.add(Dense(310,  activation ='relu',name='output_train'))
 model_test.add(Dropout(0.5))
-#model[j].add(L)
-model_test.add(Dense(120,  activation ='relu', W_regularizer=l1l2(l1=0, l2=5e-06)))
-model_test.add(Dropout(0.55))
+model_test.add(Dense(450,  activation ='relu' ))
+model_test.add(Dropout(0.4))
 
 model_test.add(Dense(2))
 		
@@ -259,7 +279,7 @@ sample_weights_test=np.absolute(sample_weights_test)
 		
 		
 # Fit the model		
-model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y3[0:int(len(X_test)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, class_weight=class_weight, shuffle=True, verbose=0, callbacks=callbacks)#, class_weight=class_weight)
+model_test.fit(X_test[0:int(len(X_test)*Adapted_percentage)], Y3[0:int(len(X_test)*Adapted_percentage)], validation_split=0.2/Adapted_percentage, nb_epoch=1, batch_size=400, shuffle=True, verbose=1, callbacks=callbacks)#, class_weight=class_weight)
 
 
 
